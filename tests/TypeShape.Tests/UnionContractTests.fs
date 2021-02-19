@@ -1,4 +1,4 @@
-﻿module TypeShape.Tests.UnionContract
+module TypeShape.Tests.UnionContract
 
 open System
 open System.Collections.Generic
@@ -23,11 +23,17 @@ type JsonEncoder() =
     interface IEncoder<JToken> with
         member _.Empty = JValue.CreateNull() :> _
         member _.Encode t = match box t with null -> JValue.CreateNull() :> _ | o -> JToken.FromObject o
-        member _.Decode t = t.ToObject()
+        member _.Decode t : 'a =
+            if FSharp.Reflection.FSharpType.IsRecord typeof<'a> || typeof<'a> = typeof<unit> then
+                t.ToObject()
+            else
+                string t |> printfn "%A"
+                t.First.First.ToObject()
+            
 
 type BasicEventSum =
     | NullaryEvent
-    | EventWithNonRecord of int
+    | EventWithNonRecord of someEntityId : Guid
     | EventWithUnit of unit
     | CartCreated of CartCreated
     | AddressUpdated of AddressUpdated

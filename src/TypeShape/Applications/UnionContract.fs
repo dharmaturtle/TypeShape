@@ -67,7 +67,10 @@ module private Impl =
                     member _.Visit(sfield : ShapeMember<'Union, 'Field>) =
                         let enc u =
                             let f = sfield.Get u
-                            encoder.Encode f
+                            if (obj.ReferenceEquals(f, null)) || (f.GetType() |> FSharp.Reflection.FSharpType.IsRecord) then
+                                encoder.Encode f
+                            else
+                                [sfield.Label, f] |> Map.ofList |> encoder.Encode
 
                         let dec u f =
                             let v = encoder.Decode f
